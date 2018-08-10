@@ -12,7 +12,7 @@ third_party {
     type: GIT
     value: "https://github.com/Reactive-Extensions/RxCpp.git"
   }
-  version: "b84db4278e54e722fbbae794f573d1142261e9a3"
-  last_upgrade_date { year: 2018 month: 1 day: 30 }
+  version: "a7d5856385f126e874db6010d9dbfd37290c61de"
+  last_upgrade_date { year: 2018 month: 8 day: 10 }
   license_type: NOTICE
 }

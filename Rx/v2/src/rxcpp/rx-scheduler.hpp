@@ -458,11 +458,18 @@ class schedulable : public schedulable_base
         public:
             ~exit_recursed_scope_type()
             {
+                if (that != nullptr) {
                     that->requestor = nullptr;
+                }
             }
             exit_recursed_scope_type(const recursed_scope_type* that)
                 : that(that)
             {
+            }
+            exit_recursed_scope_type(exit_recursed_scope_type && other) RXCPP_NOEXCEPT
+                : that(other.that)
+            {
+                other.that = nullptr;
             }
         };
     public:
