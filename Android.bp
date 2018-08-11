@@ -18,17 +18,32 @@ cc_library_headers {
   export_include_dirs: ["Rx/v2/src"]
 }
 
-cc_test {
-  name: "librxcpp-tests",
+cc_defaults {
+  name: "librxcpp-tests-defaults",
   host_supported: true,
   srcs: [
     "Rx/v2/test/**/*.cpp",
   ],
-  whole_static_libs: ["libcatch2-upstream"],
   header_libs: ["librxcpp"],
   gtest: false,
-  // Temporarily allow exceptions for all the use of try/catch in rxcpp.
+}
+
+cc_test {
+  // "Upstream" config. Use exceptions.
+  // Ensure that if we update from upstream later that the merged code
+  // is still working on Android.
+  name: "librxcpp-tests-upstream",
+  defaults: ["librxcpp-tests-defaults"],
+  whole_static_libs: ["libcatch2-upstream"],
+  // Allow exceptions for all the use of try/catch/throw in rxcpp.
   cflags: ["-fexceptions"],
-  // Enable RTTI required to compile libcatch.
-  rtti: true,
+}
+
+cc_test {
+  // "AOSP" config. Disable exceptions.
+  // Anything in AOSP using librxcpp will use it as this config, so
+  // that's what we really care about testing.
+  name: "librxcpp-tests",
+  defaults: ["librxcpp-tests-defaults"],
+  whole_static_libs: ["libcatch2"],
 }
