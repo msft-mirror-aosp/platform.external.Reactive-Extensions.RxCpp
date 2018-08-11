@@ -173,7 +173,7 @@ class blocking_observable
         -> void {
         std::mutex lock;
         std::condition_variable wake;
-        std::exception_ptr error;
+        rxu::error_ptr error;
 
         struct tracking
         {
@@ -201,7 +201,7 @@ class blocking_observable
         auto scbr = make_subscriber<T>(
             dest,
             [&](T t){dest.on_next(t);},
-            [&](std::exception_ptr e){
+            [&](rxu::error_ptr e){
                 if (do_rethrow) {
                     error = e;
                 } else {
@@ -239,7 +239,7 @@ class blocking_observable
         track->wakened = true;
         if (!track->disposed || !track->wakened) std::terminate();
 
-        if (error) {std::rethrow_exception(error);}
+        if (error) {rxu::rethrow_exception(error);}
     }
 
 public:
@@ -319,7 +319,7 @@ public:
             cs,
             [&](T v){result.reset(v); cs.unsubscribe();});
         if (result.empty())
-            throw rxcpp::empty_error("first() requires a stream with at least one value");
+            rxu::throw_exception(rxcpp::empty_error("first() requires a stream with at least one value"));
         return result.get();
         static_assert(sizeof...(AN) == 0, "first() was passed too many arguments.");
     }
@@ -345,7 +345,7 @@ public:
         subscribe_with_rethrow(
             [&](T v){result.reset(v);});
         if (result.empty())
-            throw rxcpp::empty_error("last() requires a stream with at least one value");
+            rxu::throw_exception(rxcpp::empty_error("last() requires a stream with at least one value"));
         return result.get();
         static_assert(sizeof...(AN) == 0, "last() was passed too many arguments.");
     }
@@ -462,14 +462,13 @@ struct safe_subscriber
     safe_subscriber(SourceOperator& so, Subscriber& o) : so(std::addressof(so)), o(std::addressof(o)) {}
 
     void subscribe() {
-        try {
+        RXCPP_TRY {
             so->on_subscribe(*o);
-        }
-        catch(...) {
+        } RXCPP_CATCH(...) {
             if (!o->is_subscribed()) {
-                throw;
+              rxu::rethrow_current_exception();
             }
-            o->on_error(std::current_exception());
+            o->on_error(rxu::make_error_ptr(rxu::current_exception()));
             o->unsubscribe();
         }
     }
