@@ -27,6 +27,8 @@
 #define RXCPP_USE_EXCEPTIONS 1
 #endif
 
+#define RXCPP_NORETURN __declspec(noreturn)
+
 #elif defined(__clang__)
 
 #if __has_feature(cxx_rvalue_references)
@@ -40,6 +42,12 @@
 #endif
 #if __has_feature(cxx_exceptions)
 #define RXCPP_USE_EXCEPTIONS 1
+#endif
+
+#if __has_feature(cxx_attributes)
+#define RXCPP_NORETURN [[noreturn]]
+#else
+#define RXCPP_NORETURN __attribute__ ((noreturn))
 #endif
 
 #elif defined(__GNUG__)
@@ -63,6 +71,8 @@
 #if defined(__EXCEPTIONS)
 #define RXCPP_USE_EXCEPTIONS 1
 #endif
+
+#define RXCPP_NORETURN __attribute__ ((noreturn))
 
 #endif
 
