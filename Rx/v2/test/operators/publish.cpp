@@ -2,9 +2,11 @@
 #include <rxcpp/operators/rx-publish.hpp>
 #include <rxcpp/operators/rx-connect_forever.hpp>
 #include <rxcpp/operators/rx-ref_count.hpp>
+#include <rxcpp/operators/rx-map.hpp>
+#include <rxcpp/operators/rx-merge.hpp>
 
 
-SCENARIO("publish range", "[hide][range][subject][publish][subject][operators]"){
+SCENARIO("publish range", "[!hide][range][subject][publish][subject][operators]"){
     GIVEN("a range"){
         WHEN("published"){
             auto published = rxs::range<int>(0, 10).publish();
@@ -34,6 +36,104 @@ SCENARIO("publish range", "[hide][range][subject][publish][subject][operators]")
                 [](int v){std::cout << v << ", ";},
             // on_completed
                 [](){std::cout << " done." << std::endl;});
+        }
+    }
+}
+
+SCENARIO("publish ref_count", "[range][subject][publish][ref_count][operators]"){
+    GIVEN("a range"){
+        WHEN("ref_count is used"){
+            auto published = rxs::range<int>(0, 3).publish().ref_count();
+
+            std::vector<int> results;
+            published.subscribe(
+            // on_next
+                [&](int v){
+                    results.push_back(v);
+                },
+            // on_completed
+                [](){});
+
+            std::vector<int> expected_results;
+            expected_results.push_back(0);
+            expected_results.push_back(1);
+            expected_results.push_back(2);
+            expected_results.push_back(3);
+
+            CHECK(results == expected_results);
+        }
+        WHEN("ref_count(other) is used"){
+            auto published = rxs::range<double>(0, 10).publish();
+            auto map_to_int = published.map([](double v) { return (long) v; });
+
+            // Ensures that 'ref_count(other)' has the source value type,
+            // not the publisher's value type.
+            auto with_ref_count = map_to_int.ref_count(published);
+
+            std::vector<long> results;
+
+            with_ref_count.subscribe(
+            // on_next
+                [&](long v){
+                    results.push_back(v);
+                },
+            // on_completed
+                [](){});
+
+            std::vector<long> expected_results;
+            for (long i = 0; i <= 10; ++i) {
+              expected_results.push_back(i);
+            }
+            CHECK(results == expected_results);
+        }
+        WHEN("ref_count(other) is used in a diamond"){
+            auto source = rxs::range<double>(0, 3);
+
+            int published_on_next_count = 0;
+            // Ensure we only subscribe once to 'published' when its in a diamond.
+            auto next = source.map(
+                [&](double v) {
+                    published_on_next_count++;
+                    return v;
+                }
+            );
+            auto published = next.publish();
+
+            // Ensures that 'x.ref_count(other)' has the 'x' value type, not the other's value
+            // type.
+            auto map_to_int = published.map([](double v) { return (long) v; });
+
+            auto left = map_to_int.map([](long v) { return v * 2; });
+            auto right = map_to_int.map([](long v) { return v * 100; });
+
+            auto merge = left.merge(right);
+            auto with_ref_count = merge.ref_count(published);
+
+            std::vector<long> results;
+
+            with_ref_count.subscribe(
+            // on_next
+                [&](long v){
+                    results.push_back(v);
+                },
+            // on_completed
+                [](){});
+
+            // Ensure we only subscribe once to 'published' when its in a diamond.
+            CHECK(published_on_next_count == 4);
+
+            std::vector<long> expected_results;
+            expected_results.push_back(0);
+            expected_results.push_back(0);
+            expected_results.push_back(2);
+            expected_results.push_back(100);
+            expected_results.push_back(4);
+            expected_results.push_back(200);
+            expected_results.push_back(6);
+            expected_results.push_back(300);
+
+            // Ensure left,right is interleaved without being biased towards one side.
+            CHECK(results == expected_results);
         }
     }
 }

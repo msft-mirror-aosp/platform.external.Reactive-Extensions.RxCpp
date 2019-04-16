@@ -169,12 +169,12 @@ cd projects/build
 cmake -G"Xcode" ../CMake -B.
 ```
 
-#### Visual Studio 2013
+#### Visual Studio 2017
 ```batch
 mkdir projects\build
 cd projects\build
-cmake -G"Visual Studio 14" ..\CMake -B.
-msbuild rxcpp.sln
+cmake -G "Visual Studio 15" ..\CMake\
+msbuild Project.sln
 ```
 
 ### makefile builds
@@ -191,7 +191,7 @@ make
 ```shell
 mkdir projects/build
 cd projects/build
-cmake -G"Unix Makefiles" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=RelWithDebInfo -B. ../CMake
+cmake -G"Unix Makefiles" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" -B. ../CMake
 make
 ```
 

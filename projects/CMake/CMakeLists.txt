@@ -59,6 +59,7 @@ set(RX_SOURCES
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-ref_count.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-repeat.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-replay.hpp
+   ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-retry-repeat-common.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-retry.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-sample_time.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-scan.hpp
@@ -83,13 +84,16 @@ set(RX_SOURCES
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-with_latest_from.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-window.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-window_time.hpp
+   ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-window_toggle.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-window_time_count.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/operators/rx-zip.hpp
+   ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-composite_exception.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-connectable_observable.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-coordination.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-coroutine.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-grouped_observable.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-includes.hpp
+   ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-lite.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-notification.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-observable.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/rx-observer.hpp
@@ -114,6 +118,7 @@ set(RX_SOURCES
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/schedulers/rx-virtualtime.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-create.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-defer.hpp
+   ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-empty.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-error.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-interval.hpp
    ${RXCPP_DIR}/Rx/v2/src/rxcpp/sources/rx-iterate.hpp
@@ -130,8 +135,12 @@ set(RX_SOURCES
 # Grouping all the source files puts them into a virtual folder in Visual Studio
 source_group("src" FILES ${RX_SOURCES})
 
+if (MSVC)
+# This 'RxCpp' build target only appears to be a virtual project for IDEs.
+# It won't actually build correctly since it is missing the shared.cmake integration.
 add_library(RxCpp SHARED ${RX_SOURCES})
 SET_TARGET_PROPERTIES(RxCpp PROPERTIES LINKER_LANGUAGE CXX)
+endif (MSVC)
 
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE CACHE BOOL "Don't require all projects to be built in order to install" FORCE)
 
