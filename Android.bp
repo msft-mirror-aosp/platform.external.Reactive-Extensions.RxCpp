@@ -26,6 +26,7 @@ cc_defaults {
   ],
   header_libs: ["librxcpp"],
   gtest: false,
+  shared_libs: ["liblog"],
 }
 
 cc_test {
